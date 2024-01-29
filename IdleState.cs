@@ -1,4 +1,6 @@
-﻿namespace UniversaLIS
+﻿using System;
+
+namespace UniversaLIS
 {
      
      public class IdleState : ILISState
@@ -46,6 +48,7 @@
           public void RcvENQ()
           {
                comm.Send(Constants.ACK);
+               UniversaLIService.AppendToLog($"out: \t<ACK>");     //GD 28 01 2024
           }
 
           public void RcvEOT()
@@ -67,6 +70,7 @@
                {
                     // Send ENQ
                     comm.Send(Constants.ENQ);
+                    UniversaLIService.AppendToLog($"out: \t<ENQ>");     //GD 28 01 2024
                     // Set transTimer = 15
                     comm.TransTimer.Reset(15);
 #if DEBUG

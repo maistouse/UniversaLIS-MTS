@@ -46,6 +46,10 @@ A graphical user interface is not included at this time because most use cases w
 
 A simple GUI might be added in the future, but mostly for demonstration purposes. The real benefit of this software is in its ability to integrate with other systems, so while a GUI could be used, it would be less efficient in a production environment.
 
+## logs
+
+GD_19_11_2023: : The Logs can be retrieved in the folder C:\ProgramData\UniversaLIS
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

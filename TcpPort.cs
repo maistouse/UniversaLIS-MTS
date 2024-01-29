@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime;
 using System.Text;
 
 namespace UniversaLIS
@@ -17,6 +19,7 @@ namespace UniversaLIS
           readonly byte[] readBuffer = new byte[BUFFER_SIZE];
           readonly StringBuilder incomingData = new StringBuilder();
           private readonly string portName;
+ 
           public TcpPort(Tcp tcpSettings)
           {
                int port = tcpSettings.Socket;
@@ -84,10 +87,11 @@ namespace UniversaLIS
                server.Stop();
           }
 
-          void IPortAdapter.Open()
+          int IPortAdapter.Open()
+          // void IPortAdapter.Open()                         //GD: 19 11 2023
           {
                server.Start(1); // Only one instrument connection per port, for simplicity.
-               Console.WriteLine("Waiting for a connection...");
+               Console.WriteLine("Waiting for a connection... ");    
                client = server.AcceptSocket();
                AppendToLog("Connected!");
                incomingData.Clear();
@@ -96,6 +100,7 @@ namespace UniversaLIS
                portTimer.Elapsed += CheckDataReceived;
                portTimer.AutoReset = true;
                portTimer.Start();
+               return 0;                                      //GD: 19 11 2023
           }
 
           string IPortAdapter.ReadChars()

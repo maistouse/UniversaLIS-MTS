@@ -39,6 +39,7 @@ namespace UniversaLIS
                comm.CurrentMessage = comm.OutboundMessageQueue.Dequeue();
                comm.CurrentMessage.PrepareToSend();
                comm.Send(comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);
+               UniversaLIService.AppendToLog($"out: \t" + comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);     //GD 28 01 2024
                comm.CurrentFrameCounter++;
                // Reset the NAK count to 0.
                comm.NumNAK = 0;

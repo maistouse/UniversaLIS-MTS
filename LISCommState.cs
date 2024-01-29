@@ -154,7 +154,8 @@ namespace UniversaLIS
                {
                     // Send EOT and return to idle state.
                     comm.Send(Constants.EOT);
-                    if (CommState is TransWaitState && comm.CurrentMessage.FrameList.Count > comm.CurrentFrameCounter)
+                    UniversaLIService.AppendToLog($"out: \t<EOT>");     //GD 28 01 2024
+                if (CommState is TransWaitState && comm.CurrentMessage.FrameList.Count > comm.CurrentFrameCounter)
                     {
                          comm.OutboundMessageQueue.Enqueue(comm.CurrentMessage);
                          comm.CurrentMessage = new Message(comm);

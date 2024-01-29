@@ -70,6 +70,7 @@ namespace UniversaLIS
                {
                     // Send ACK 
                     comm.Send(Constants.ACK);
+                    UniversaLIService.AppendToLog($"out: \t<ACK>");     //GD 28 01 2024
                     // Reset rcvTimer to 30 seconds.
                     comm.RcvTimer.Reset(30);
                     // Increment frame number.
@@ -81,8 +82,9 @@ namespace UniversaLIS
                {
                     // Send NAK
                     comm.Send(Constants.NAK);
+                    UniversaLIService.AppendToLog($"out: \t<NAK>");     //GD 28 01 2024
                     // Reset rcvTimer to 30 seconds.
-                    comm.RcvTimer.Reset(30);
+                comm.RcvTimer.Reset(30);
                }
 
           }
@@ -92,10 +94,15 @@ namespace UniversaLIS
                if (inputString.Substring(0, 3) == $"{Constants.STX}1H")
                {
                     // 1H|\\^&||{password}|
+                    //TODO Thre is no reading of the entry config.yml
                     String[] fieldArray = inputString.Split('|');
-                    if (fieldArray[3] != comm.password)
+                    if (fieldArray[3] == "" && comm.password == null)               //GD: 29 11 2023
+                    {                                                               //GD: 29 11 2023
+                    return true;                                                    //GD: 29 11 2023
+                    }                                                               //GD: 29 11 2023
+                if (fieldArray[3] != comm.password)
                     {
-                         return false;
+                        return false;
                     }
                }
                return true;
@@ -106,12 +113,14 @@ namespace UniversaLIS
                string message = InputString;
                // There should be a message ending in a <CR><ETX>, then a checksum, and then a <CR><LF> at the end of the line.
                // Find the <ETX>. Any message that reaches this part of the code should have one.
-               int position = message.IndexOf(Constants.ETX);
+               // int position = message.IndexOf(Constants.ETX);                                   //GD: 19 11 2023
+               int position = message.IndexOf(Constants.ETX, System.StringComparison.Ordinal);     //GD: 19 11 2023
                if (position < 0)
                {
-                    // If no <ETX>, maybe it's an intermediate frame. Check for <ETB>.
-                    position = message.IndexOf(Constants.ETB);
-                    if (position < 0)
+                // If no <ETX>, maybe it's an intermediate frame. Check for <ETB>.
+                //position = message.IndexOf(Constants.ETB);                                      //GD: 19 11 2023
+                position = message.IndexOf(Constants.ETB, System.StringComparison.Ordinal);       //GD: 19 11 2023
+                if (position < 0)
                     {
                          return false;
                     }

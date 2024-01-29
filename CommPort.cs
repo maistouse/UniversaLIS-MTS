@@ -24,13 +24,14 @@ namespace UniversaLIS
           }
           public void Send(string messageText)
           {
-               AppendToLog($"Out: \t{messageText}");
+               // AppendToLog($"Out: \t{messageText}");                                //GD 27 11 2023 Its better to log the message after sending it
                byte[] bytes = serialPort.Encoding.GetBytes(messageText);
                for (int i = 0; i < bytes.Length; i++)
                {
                     serialPort.Write(bytes, i, 1);
                }
-          }
+               AppendToLog($"Out: \t{messageText}");                                  //GD 27 11 2023 Its better to log the message after sending it
+        }
           public static readonly EventWaitHandle logOpen = new EventWaitHandle(true, EventResetMode.AutoReset);
 
           string IPortAdapter.PortName
@@ -63,16 +64,31 @@ namespace UniversaLIS
                EventHandler? handler = PortDataReceived;
                handler?.Invoke(this, eventArgs);
           }
-
-          public void Open()
+          public int Open()
+          // public void Open()                 //GD: 19 11 2023 In case of exception int can return an error
           {
-               serialPort.Open();
-          }
-
-          public void Close()
+               try                              //GD: 19 11 2023
+               {                                //GD: 19 11 2023
+                   serialPort.Open();
+                AppendToLog("Port: " + serialPort.PortName + " open.");        //GD: 27 11 2023
+                Console.WriteLine(" serial COM: port " + serialPort.PortName + " open"); // GD 28 01 2024
+                return 0;
+               }                                //GD: 19 11 2023
+               catch                            //GD: 19 11 2023
+               {                                //GD: 19 11 2023
+                   Console.WriteLine("Unable to open COM: port " + serialPort.PortName + " does not exit exist or already used");  //GD 19 11 2023
+                                                //GD: TODO write a entry in the log file.
+                   AppendToLog("Unable to open: " + serialPort.PortName + ".");
+                                                //GD: TODO manage this error in the caller and in all heap.
+                                                //GD: Perhaps send a throw but here the Open is a void procedure.
+                   return -1;                   //GD: 19 11 2023  
+               }                                //GD: 19 11 2023 
+          }                                     
+        public void Close()
           {
                serialPort.Close();
-          }
+               AppendToLog("Port: " + serialPort.PortName + " closed.");       //GD: 27 11 2023
+        }
 
           string GetCharString()
           {

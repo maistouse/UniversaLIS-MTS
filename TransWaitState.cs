@@ -42,13 +42,15 @@ namespace UniversaLIS
                if (comm.CurrentMessage.FrameList.Count == comm.CurrentFrameCounter)
                {
                     comm.Send(Constants.EOT);
+                    UniversaLIService.AppendToLog($"out: \t" + "<EOT>");     //GD 28 01 2024
                     comm.CurrentMessage = new Message(comm);
                }
                else
                {
                     // Otherwise, send next frame.
                     comm.Send(comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);
-                    comm.CurrentFrameCounter++;
+                    UniversaLIService.AppendToLog($"out: \t" + comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);     //GD 28 01 2024
+                comm.CurrentFrameCounter++;
                     // Reset the NAK count to 0.
                     comm.NumNAK = 0;
                     // Reset the transaction timer to 15 seconds.
@@ -62,6 +64,7 @@ namespace UniversaLIS
                // Signal the instrument to interrupt the transmission with an EOT.
                AppendToLog("Data received in TransWait state: " + InputString);
                comm.Send(Constants.EOT);
+               UniversaLIService.AppendToLog($"out: \t" + "<EOT>");     //GD 28 01 2024
           }
 
           public void RcvENQ()
@@ -89,6 +92,7 @@ namespace UniversaLIS
           {
                // Send old frame.
                comm.Send(comm.CurrentMessage.FrameList[comm.CurrentFrameCounter - 1]);
+               UniversaLIService.AppendToLog($"out: \t" + comm.CurrentMessage.FrameList[comm.CurrentFrameCounter - 1]);     //GD 28 01 2024
                // Increment NAK count.
                comm.NumNAK++;
                if (comm.NumNAK == 6)
@@ -96,6 +100,7 @@ namespace UniversaLIS
                     // Too many NAKs. Something's wrong. Send an EOT and go back to Idle.
                     // Maybe stick the message back in the queue to try again later?
                     comm.Send(Constants.EOT);
+                    UniversaLIService.AppendToLog($"out: \t" + "<EOT>");     //GD 28 01 2024
                     comm.OutboundMessageQueue.Enqueue(comm.CurrentMessage);
                     comm.CurrentMessage = new Message(comm);
                }

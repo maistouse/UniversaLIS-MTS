@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO.Ports;
+using System.Linq;
 using System.Text;
 using static UniversaLIS.UniversaLIService;
 // TODO: Escape special characters in message fields, remove any delimiter characters within field contents.
@@ -64,7 +66,7 @@ namespace UniversaLIS
                {
                     frameSize = 63993;
                }
-               password = serialSettings.Password;
+               password = serialSettings.Password;  //To set the password from the Config.yml
                try
                {
                     // Set the serial port properties and try to open it.
@@ -76,21 +78,28 @@ namespace UniversaLIS
                     CurrentMessage = new Message(this);
                     // Set the handler for the DataReceived event.
                     ComPort.PortDataReceived += CommPortDataReceived!;
-                    ComPort.Open();
-                    AppendToLog($"Port opened: {serialSettings.Portname}");
-                    idleTimer.AutoReset = true;
-                    idleTimer.Elapsed += new System.Timers.ElapsedEventHandler(IdleTime);
-                    if (serialSettings.AutoSendOrders > 0)
-                    {
-                         idleTimer.Elapsed += WorklistTimedEvent;
-                         idleTimer.Interval = serialSettings.AutoSendOrders;
-                    }
-                    else
-                    {
-                         idleTimer.Interval = 10000;
-                    }
-                    idleTimer.Start();
-               }
+                    //ComPort.Open();                              //GD: 19 11 2023
+                    if (ComPort.Open() == 0)                        //GD: 19 11 2023 
+                    {                                               //GD: 19 11 2023
+                        AppendToLog($"Port opened: {serialSettings.Portname}");
+                        idleTimer.AutoReset = true;
+                        idleTimer.Elapsed += new System.Timers.ElapsedEventHandler(IdleTime);
+                        if (serialSettings.AutoSendOrders > 0)
+                        {
+                            idleTimer.Elapsed += WorklistTimedEvent;
+                            idleTimer.Interval = serialSettings.AutoSendOrders;
+                        }
+                        else
+                        {
+                            idleTimer.Interval = 10000;  //GD: I suppose 10s TimeOut
+                        }
+                        idleTimer.Start();
+                    }                                               //GD: 19 11 2023
+                    else                                            //GD: 19 11 2023
+                    {                                               //GD: 19 11 2023
+                        AppendToLog("Unable to open: " + serialSettings.Portname + ".");
+                    }                                               //GD: 19 11 2023
+                }
                catch (Exception ex)
                {
                     service.HandleEx(ex);
@@ -122,15 +131,18 @@ namespace UniversaLIS
                     // Set the handler for the DataReceived event.
                     ComPort.PortDataReceived += CommPortDataReceived!;
                     CurrentMessage = new Message(this);
-                    ComPort.Open();
-                    AppendToLog($"Socket opened: {tcpSettings.Socket}");
-                    idleTimer.AutoReset = true;
-                    idleTimer.Elapsed += new System.Timers.ElapsedEventHandler(IdleTime);
-                    if (tcpSettings.AutoSendOrders > 0)
-                    {
-                         idleTimer.Elapsed += WorklistTimedEvent;
-                    }
-                    idleTimer.Start();
+                    //ComPort.Open();                              //GD: 19 11 2023
+                    if (ComPort.Open() == 0)                        //GD: 19 11 2023
+                    {                                              //GD: 19 11 2023
+                        AppendToLog($"Socket opened: {tcpSettings.Socket}");
+                        idleTimer.AutoReset = true;
+                        idleTimer.Elapsed += new System.Timers.ElapsedEventHandler(IdleTime);
+                        if (tcpSettings.AutoSendOrders > 0)
+                        {
+                            idleTimer.Elapsed += WorklistTimedEvent;
+                        }
+                        idleTimer.Start();
+                     }                                             //GD: 19 11 2023
                }
                catch (Exception ex)
                {
@@ -184,6 +196,7 @@ namespace UniversaLIS
                 */
                IPortAdapter port = (IPortAdapter)sender;
                StringBuilder buffer = new StringBuilder();
+               string bufferString;
                try
                {
                     idleTimer.Stop();
@@ -207,8 +220,9 @@ namespace UniversaLIS
 #if DEBUG
                     UniversaLIService.AppendToLog($"Elapsed port read time: {stopwatch.ElapsedMilliseconds}");
 #endif
-                    UniversaLIService.AppendToLog($"In: \t{buffer}");
-                    CommState.RcvInput(buffer.ToString());
+                    UniversaLIService.AppendToLog($"In: \t{AsciiToText(buffer.ToString())}");     //GD 28 01 2024
+                    bufferString = buffer.ToString();
+                    CommState.RcvInput(bufferString);
                     idleTimer.Start();
                }
                catch (Exception ex)
@@ -681,6 +695,24 @@ namespace UniversaLIS
                }
                // Now that all pending requests have been sent, restart the timer.
                idleTimer.Start();
+          }
+          public string AsciiToText(string txt)
+          // when It recieve data with ascii below 31. It's not possible to see the character. then I transform those character
+          //GD 28 01 2024
+          {
+              string output = txt.Replace(Constants.ACK, "<ACK>");
+              output = output.Replace(Constants.CR, "<CR>");
+              output = output.Replace(Constants.ENQ, "<ENQ>");
+              output = output.Replace(Constants.EOT, "<EOT>");
+              output = output.Replace(Constants.ETB, "<ETB>");
+              output = output.Replace(Constants.ETX, "<ETX>");
+              output = output.Replace(Constants.LF, "<LF>");
+              output = output.Replace(Constants.NAK, "<NAK>");
+              output = output.Replace(Constants.STX, "<STX>");
+              output = output.Replace(Constants.VT, "<VT>");
+              output = output.Replace(Constants.FS, "<FS>");
+
+              return output;
           }
      }
 }
