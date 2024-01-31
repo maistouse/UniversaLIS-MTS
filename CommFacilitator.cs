@@ -220,7 +220,7 @@ namespace UniversaLIS
 #if DEBUG
                     UniversaLIService.AppendToLog($"Elapsed port read time: {stopwatch.ElapsedMilliseconds}");
 #endif
-                    UniversaLIService.AppendToLog($"In: \t{AsciiToText(buffer.ToString())}");     //GD 28 01 2024
+                    UniversaLIService.AppendToLog($"In: \t{UniversaLIService.AsciiToText(buffer.ToString())}");     //GD 28 01 2024
                     bufferString = buffer.ToString();
                     CommState.RcvInput(bufferString);
                     idleTimer.Start();
@@ -696,7 +696,7 @@ namespace UniversaLIS
                // Now that all pending requests have been sent, restart the timer.
                idleTimer.Start();
           }
-          public string AsciiToText(string txt)
+ /*         public string AsciiToText(string txt)
           // when It recieve data with ascii below 31. It's not possible to see the character. then I transform those character
           //GD 28 01 2024
           {
@@ -714,5 +714,6 @@ namespace UniversaLIS
 
               return output;
           }
+ */
      }
 }

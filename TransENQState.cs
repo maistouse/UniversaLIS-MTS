@@ -1,4 +1,5 @@
-﻿using static UniversaLIS.UniversaLIService;
+﻿using System;
+using static UniversaLIS.UniversaLIService;
 
 namespace UniversaLIS
 {
@@ -39,7 +40,8 @@ namespace UniversaLIS
                comm.CurrentMessage = comm.OutboundMessageQueue.Dequeue();
                comm.CurrentMessage.PrepareToSend();
                comm.Send(comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);
-               UniversaLIService.AppendToLog($"out: \t" + comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);     //GD 28 01 2024
+               UniversaLIService.AppendToLog($"In: \t{UniversaLIService.AsciiToText(comm.CurrentMessage.FrameList[comm.CurrentFrameCounter])}");  //GD 31 01 2024
+               // UniversaLIService.AppendToLog($"out: \t" + comm.CurrentMessage.FrameList[comm.CurrentFrameCounter]);                            //GD 28 01 2024
                comm.CurrentFrameCounter++;
                // Reset the NAK count to 0.
                comm.NumNAK = 0;

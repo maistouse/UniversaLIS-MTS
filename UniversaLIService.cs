@@ -154,6 +154,25 @@ namespace UniversaLIS
             OnStop();
         }
 
+        public static string AsciiToText(string txt)
+        // when It recieve data with ascii below 31. It's not possible to see the character. then I transform those character
+        //GD 28 01 2024
+        {
+            string output = txt.Replace(Constants.ACK, "<ACK>");
+            output = output.Replace(Constants.CR, "<CR>");
+            output = output.Replace(Constants.ENQ, "<ENQ>");
+            output = output.Replace(Constants.EOT, "<EOT>");
+            output = output.Replace(Constants.ETB, "<ETB>");
+            output = output.Replace(Constants.ETX, "<ETX>");
+            output = output.Replace(Constants.LF, "<LF>");
+            output = output.Replace(Constants.NAK, "<NAK>");
+            output = output.Replace(Constants.STX, "<STX>");
+            output = output.Replace(Constants.VT, "<VT>");
+            output = output.Replace(Constants.FS, "<FS>");
+
+            return output;
+        }
+
     }
 
 }
